@@ -13,8 +13,8 @@ and may not be redistributed without written permission.*/
 using namespace std;
 
 //The dimensions of the level
-const int LEVEL_WIDTH = 9000;
-const int LEVEL_HEIGHT = 7000;
+const int LEVEL_WIDTH = 4704;
+const int LEVEL_HEIGHT = 5632;
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1000;
@@ -518,13 +518,13 @@ int main( int argc, char* args[] )
 			SDL_Rect wall3;
 			wall3.x = 0;
 			wall3.y = 0;
-			wall3.w = 364;
+			wall3.w = 360;
 			wall3.h = 310;
 			
 			SDL_Rect wall4;
 			wall4.x = 0;
 			wall4.y = 416;
-			wall4.w = 364;
+			wall4.w = 360;
 			wall4.h = 12;
 			
 			SDL_Rect wall5;
@@ -534,7 +534,7 @@ int main( int argc, char* args[] )
 			wall5.h = 128;
 			
 			SDL_Rect wall6;
-			wall6.x = 436;
+			wall6.x = 438;
 			wall6.y = 0;
 			wall6.w = 12;
 			wall6.h = 428;
@@ -546,28 +546,59 @@ int main( int argc, char* args[] )
 			wall7.h = 44;
 			//Nilagiri entrance wall
 			SDL_Rect wall8;
-			wall8.x = 672;
+			wall8.x = 662;
 			wall8.y = 384;
-			wall8.w = 536;
+			wall8.w = 532;
 			wall8.h = 44;
 			//Kara entrance wall
 			SDL_Rect wall9;
-			wall9.x = 1248;
+			wall9.x = 1238;
 			wall9.y = 384;
-			wall9.w = 536;
+			wall9.w = 532;
 			wall9.h = 44;
 			//Aravali entrance wall
 			SDL_Rect wall10;
-			wall10.x = 1824;
+			wall10.x = 1814;
 			wall10.y = 384;
-			wall10.w = 536;
+			wall10.w = 532;
 			wall10.h = 44;
 			//Jwala entrance wall
 			SDL_Rect wall11;
-			wall11.x = 2400;
+			wall11.x = 2390;
 			wall11.y = 384;
-			wall11.w = 352;
+			wall11.w = 348;
 			wall11.h = 44;
+			//Inter hostel walls
+			//nilagiri
+			SDL_Rect wall12;
+			wall12.x = 992;
+			wall12.y = 128;
+			wall12.w = 32;
+			wall12.h = 288;
+			//kara
+			SDL_Rect wall13;
+			wall13.x = 1568;
+			wall13.y = 128;
+			wall13.w = 32;
+			wall13.h = 288;
+			//aravali
+			SDL_Rect wall14;
+			wall14.x = 2144;
+			wall14.y = 128;
+			wall14.w = 32;
+			wall14.h = 288;
+			//jwala
+			SDL_Rect wall15;
+			wall15.x = 2720;
+			wall15.y = 128;
+			wall15.w = 32;
+			wall15.h = 288;
+			//top road of nalanda grounds
+			SDL_Rect wall16;
+			wall16.x = 0;
+			wall16.y = 532;
+			wall16.w = 906;
+			wall16.h = 12;
 			//pushing into vector
 			wall.push_back(wall1);
 			wall.push_back(wall2);
@@ -580,6 +611,12 @@ int main( int argc, char* args[] )
 			wall.push_back(wall9);
 			wall.push_back(wall10);
 			wall.push_back(wall11);
+			wall.push_back(wall12);
+			wall.push_back(wall13);
+			wall.push_back(wall14);
+			wall.push_back(wall15);
+			wall.push_back(wall16);
+			
 			//***********************************************//
 			//The camera area
 			SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
