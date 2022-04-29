@@ -285,30 +285,52 @@ void Dot::handleEvent( SDL_Event& e )
     }
 }
 
-void Dot::move(vector<SDL_Rect> wall)
+void Dot::move( vector<SDL_Rect> wall )
 {
     //Move the dot left or right
     mPosX += mVelX;
-    mCollider.x = mPosX;
+	mCollider.x = mPosX;
 
-    //If the dot went too far to the left or right
-    if( ( mPosX < 0 ) || ( mPosX + DOT_WIDTH > LEVEL_WIDTH )  || checkCollision( mCollider, wall )  )
+    //If the dot collided or went too far to the left or right
+    if( ( mPosX < 0 ) || ( mPosX + DOT_WIDTH > SCREEN_WIDTH ) || !checkCollision( mCollider, wall ) )
     {
         //Move back
-        mPosX -= mVelX;
-        mCollider.x = mPosX;
+        int i=abs(mVelX);
+        while(i>=0){
+        	
+        	if(!checkCollision(mCollider,wall)){
+        		if(mVelX>0){mPosX -= 1;}
+        		else if(mVelX<0){mPosX+=1;}
+        		mCollider.x=mPosX;
+        	}
+        	i-=1;
+        }
+        
+        	//mPosX-=mVelX;
+		mCollider.x = mPosX;
     }
 
     //Move the dot up or down
     mPosY += mVelY;
-    mCollider.y = mPosY;
+	mCollider.y = mPosY;
 
-    //If the dot went too far up or down
-    if( ( mPosY < 0 ) || ( mPosY + DOT_HEIGHT > LEVEL_HEIGHT )  || checkCollision( mCollider, wall ) )
+    //If the dot collided or went too far up or down
+    if( ( mPosY < 0 ) || ( mPosY + DOT_HEIGHT > SCREEN_HEIGHT ) || !checkCollision( mCollider, wall ) )
     {
         //Move back
-        mPosY -= mVelY;
-        mCollider.y = mPosY;
+        int i=abs(mVelY);
+        while(i>=0){
+        	
+        	if(!checkCollision(mCollider,wall)==true){
+        		if(mVelY>0){mPosY -= 1;}
+        		else if(mVelY<0){mPosY+=1;}
+        		mCollider.y=mPosY;
+        		
+        	}
+        	i-=1;
+        }
+        	//mPosY-=mVelY;
+		mCollider.y = mPosY;
     }
 }
 
@@ -442,22 +464,22 @@ bool checksingle( SDL_Rect a, SDL_Rect b )
     bottomB = b.y + b.h;
 
     //If any of the sides from A are outside of B
-    if( bottomA <= topB )
+    if( topA < topB )
     {
         return false;
     }
 
-    if( topA >= bottomB )
+    if( bottomA > bottomB )
     {
         return false;
     }
 
-    if( rightA <= leftB )
+    if( leftA < leftB )
     {
         return false;
     }
 
-    if( leftA >= rightB )
+    if( rightA > rightB )
     {
         return false;
     }
@@ -504,101 +526,143 @@ int main( int argc, char* args[] )
 			vector<SDL_Rect> wall;
 			//Set the wall
 			SDL_Rect wall1;
-			wall1.x = 0;
-			wall1.y = 416;
-			wall1.w = 12;
-			wall1.h = 128;
+			wall1.x = 12;
+			wall1.y = 428;
+			wall1.w = 3060;
+			wall1.h = 104;
 			
 			SDL_Rect wall2;
-			wall2.x = 0;
-			wall2.y = 0;
-			wall2.w = 224;
-			wall2.h = 428;
+			wall2.x = 364;
+			wall2.y = 12;
+			wall2.w = 72;
+			wall2.h = 430;
 			
 			SDL_Rect wall3;
-			wall3.x = 0;
-			wall3.y = 0;
-			wall3.w = 360;
-			wall3.h = 310;
+			wall3.x = 224;
+			wall3.y = 320;
+			wall3.w = 160;
+			wall3.h = 96;
 			
 			SDL_Rect wall4;
-			wall4.x = 0;
-			wall4.y = 416;
-			wall4.w = 360;
-			wall4.h = 12;
+			wall4.x = 1196;
+			wall4.y = 448;
+			wall4.w = 104;
+			wall4.h = 4084;
 			
 			SDL_Rect wall5;
-			wall5.x = 436;
-			wall5.y = 0;
-			wall5.w = 2316;
-			wall5.h = 128;
+			wall5.x = 1196;
+			wall5.y = 4428;
+			wall5.w = 3124;
+			wall5.h = 104;
 			
 			SDL_Rect wall6;
-			wall6.x = 438;
-			wall6.y = 0;
-			wall6.w = 12;
-			wall6.h = 428;
+			wall6.x = 3340;
+			wall6.y = 4448;
+			wall6.w = 104;
+			wall6.h = 1184;
 			//Nilagiri left entrance (NM)
 			SDL_Rect wall7;
-			wall7.x = 448;
-			wall7.y = 384;
-			wall7.w = 172;
-			wall7.h = 44;
+			wall7.x = 1216;
+			wall7.y = 3980;
+			wall7.w = 1620;
+			wall7.h = 72;
 			//Nilagiri entrance wall
 			SDL_Rect wall8;
-			wall8.x = 662;
-			wall8.y = 384;
-			wall8.w = 532;
-			wall8.h = 44;
+			wall8.x = 812;
+			wall8.y = 1036;
+			wall8.w = 1736;
+			wall8.h = 72;
 			//Kara entrance wall
 			SDL_Rect wall9;
-			wall9.x = 1238;
-			wall9.y = 384;
-			wall9.w = 532;
-			wall9.h = 44;
+			wall9.x = 2476;
+			wall9.y = 480;
+			wall9.w = 72;
+			wall9.h = 628;
 			//Aravali entrance wall
 			SDL_Rect wall10;
-			wall10.x = 1814;
-			wall10.y = 384;
-			wall10.w = 532;
-			wall10.h = 44;
+			wall10.x = 908;
+			wall10.y = 480;
+			wall10.w = 40;
+			wall10.h = 608;
 			//Jwala entrance wall
 			SDL_Rect wall11;
-			wall11.x = 2390;
-			wall11.y = 384;
-			wall11.w = 348;
-			wall11.h = 44;
+			wall11.x = 492;
+			wall11.y = 1516;
+			wall11.w = 1620;
+			wall11.h = 40;
 			//Inter hostel walls
 			//nilagiri
 			SDL_Rect wall12;
-			wall12.x = 992;
-			wall12.y = 128;
-			wall12.w = 32;
-			wall12.h = 288;
+			wall12.x = 2092;
+			wall12.y = 1056;
+			wall12.w = 40;
+			wall12.h = 980;
 			//kara
 			SDL_Rect wall13;
-			wall13.x = 1568;
-			wall13.y = 128;
-			wall13.w = 32;
-			wall13.h = 288;
+			wall13.x = 2816;
+			wall13.y = 4012;
+			wall13.w = 596;
+			wall13.h = 40;
 			//aravali
 			SDL_Rect wall14;
-			wall14.x = 2144;
-			wall14.y = 128;
-			wall14.w = 32;
-			wall14.h = 288;
+			wall14.x = 3372;
+			wall14.y = 4032;
+			wall14.w = 40;
+			wall14.h = 416;
 			//jwala
 			SDL_Rect wall15;
-			wall15.x = 2720;
-			wall15.y = 128;
-			wall15.w = 32;
-			wall15.h = 288;
+			wall15.x = 2796;
+			wall15.y = 4032;
+			wall15.w = 40;
+			wall15.h = 416;
 			//top road of nalanda grounds
 			SDL_Rect wall16;
-			wall16.x = 0;
-			wall16.y = 532;
-			wall16.w = 906;
-			wall16.h = 12;
+			wall16.x = 2220;
+			wall16.y = 4032;
+			wall16.w = 40;
+			wall16.h = 416;
+			
+			SDL_Rect wall17;
+			wall17.x = 1740;
+			wall17.y = 4032;
+			wall17.w = 40;
+			wall17.h = 416;
+			
+			SDL_Rect wall18;
+			wall18.x = 3392;
+			wall18.y = 5388;
+			wall18.w = 1216;
+			wall18.h = 72;
+			
+			SDL_Rect wall19;
+			wall19.x = 1280;
+			wall19.y = 3468;
+			wall19.w = 480;
+			wall19.h = 40;
+			
+			SDL_Rect wall20;
+			wall20.x = 1740;
+			wall20.y = 3276;
+			wall20.w = 40;
+			wall20.h = 724;
+			
+			SDL_Rect wall21;
+			wall21.x = 1280;
+			wall21.y = 2028;
+			wall21.w = 288;
+			wall21.h = 40;
+			
+			SDL_Rect wall22;
+			wall22.x = 1984;
+			wall22.y = 1996;
+			wall22.w = 128;
+			wall22.h = 40;
+			
+			SDL_Rect wall23;
+			wall23.x = 1996;
+			wall23.y = 2016;
+			wall23.w = 40;
+			wall23.h = 256	;
 			//pushing into vector
 			wall.push_back(wall1);
 			wall.push_back(wall2);
@@ -616,7 +680,13 @@ int main( int argc, char* args[] )
 			wall.push_back(wall14);
 			wall.push_back(wall15);
 			wall.push_back(wall16);
-			
+			wall.push_back(wall17);
+			wall.push_back(wall18);
+			wall.push_back(wall19);
+			wall.push_back(wall20);
+			wall.push_back(wall21);
+			wall.push_back(wall22);
+			wall.push_back(wall23);
 			//***********************************************//
 			//The camera area
 			SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
