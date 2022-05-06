@@ -233,7 +233,7 @@ bool loadMedia()
 		gSpriteClips[3]=gSpriteClips_down[0];
 	}
 	
-	if( !gBotTexture.loadFromFile( "images/dot.bmp" ) )
+	if( !gBotTexture.loadFromFile( "images/evildog.png" ) )
 	{
 		printf( "Failed to load dot texture!\n" );
 		success = false;
@@ -302,6 +302,8 @@ int main( int argc, char* args[] )
 			
 			
 			
+			
+			
 			//The camera area
 			SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
@@ -352,6 +354,59 @@ int main( int argc, char* args[] )
 							gSpriteClips[2]=gSpriteClips_right[2];
 							gSpriteClips[3]=gSpriteClips_right[3];
 							break;
+							
+							case SDLK_h:
+								if(dot.healthkit==1){dot.up_life();}
+							break;
+							
+							case SDLK_RETURN:
+							SDL_Rect h_wall;
+							h_wall.x = 1312;
+							h_wall.y = 2028;
+							h_wall.w = 256;
+							h_wall.h = 40;
+							if(checksingle_Out(dot.mCollider,h_wall)){
+								dot.healthkit=1;
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[27])){
+								dot.ID_card=1;	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[97])){
+								if(dot.ID_card==1 && dot.mask==1){dot.attendence=1;	
+											dot.keystate=1;
+								}
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[37])){
+								if(dot.ID_card==1)dot.mask=1;	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[98])){
+								if(dot.keystate==1){dot.keystate=2;
+													dot.hungry=1;
+													dot.money=100;}	
+							}
+
+							if(checksingle_Out(dot.mCollider,wallArray.wall[104]) && dot.relaystate==0){
+								dot.relaystate=1;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[105]) && dot.relaystate==1){
+								dot.relaystate=2;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[106]) && dot.relaystate==2){
+								dot.relaystate=3;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[107]) && dot.relaystate==3){
+								dot.relaystate=4;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[108]) && dot.relaystate==4){
+								dot.relaystate=5;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[105]) && dot.relaystate==5){
+								dot.relaystate=0;
+								dot.money+=10;
+							}
+
+
+							break;
 
 							default:
 							gSpriteClips[0]=gSpriteClips_down[0];
@@ -361,13 +416,33 @@ int main( int argc, char* args[] )
 							break;
 						}
 					}
+					/*else if(e.type == SDL_KEYUP && e.key.repeat == 0)
+					{	switch( e.key.keysym.sym )
+        					{	default:
+							gSpriteClips[0]=gSpriteClips_down[0];
+							gSpriteClips[1]=gSpriteClips_down[0];
+							gSpriteClips[2]=gSpriteClips_down[0];
+							gSpriteClips[3]=gSpriteClips_down[0];
+							break;	
+        					}
+					
+					
+					}*/
 					//***********************************************************??
 					
 
 					//Handle input for the dot
 					dot.handleEvent( e );
 				}
-				bot.handleEvent();
+				//update life
+				vector<SDL_Rect> bots;
+      				bots.push_back(bot.mCollider);
+				dot.update_life(bots);
+				
+				bot.handleEvent(dot.getPosX(),dot.getPosY(),dot.mCollider);
+				
+				
+				
 				//Move the dot
 				dot.move(wallArray.wall);
 				
@@ -408,7 +483,7 @@ int main( int argc, char* args[] )
 				//********************************************************??
 				//Render current frame
 				SDL_Rect* currentClip = &gSpriteClips[ frame / 4 ];
-				gDotTexture.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
+				
 
 
 				//Go to next frame
@@ -427,6 +502,17 @@ int main( int argc, char* args[] )
 				
 				//Render bot
 				bot.render(camera.x,camera.y);
+				
+				//render life
+				dot.LivesRender();
+				
+				//powers render
+				dot.PowersRender(camera.x,camera.y,wallArray.wall);
+				dot.FoodRender(camera.x,camera.y,wallArray.wall);
+				dot.relayMoney(camera.x,camera.y);
+				dot.MoneyRender();
+
+				gDotTexture.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
 
 				//Update screen
 				SDL_RenderPresent( gRenderer );
