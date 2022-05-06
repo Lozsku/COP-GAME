@@ -8,6 +8,7 @@ public:
 	Wall_Array();	
 	vector<SDL_Rect> wall;
 	vector<SDL_Rect> portwall;
+	vector<SDL_Rect> easterwall;
 	
 };
 #endif

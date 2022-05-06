@@ -356,7 +356,26 @@ int main( int argc, char* args[] )
 							break;
 							
 							case SDLK_h:
-								if(dot.healthkit==1){dot.up_life();}
+								if(dot.healthkit==1 && dot.lives<5){dot.up_life();}
+							break;
+
+							case SDLK_y:
+								dot.ReturnYuluRender(wallArray.wall);
+							break;
+
+							case SDLK_r:
+								if(dot.food==1){
+									if(dot.lives<5) dot.lives+=1;
+									dot.food=0;
+									dot.foodRajadhani=0;
+									dot.foodMasala=0;
+									dot.foodDelhi16=0;
+									dot.foodShuru=0;
+									dot.foodAmul=0;
+									dot.foodNescafe=0;
+									dot.foodHimadri=0;
+									dot.hungry=0;
+								}
 							break;
 							
 							case SDLK_RETURN:
@@ -366,8 +385,18 @@ int main( int argc, char* args[] )
 							h_wall.w = 256;
 							h_wall.h = 40;
 							if(checksingle_Out(dot.mCollider,h_wall)){
-								dot.healthkit=1;
+								if(dot.money>=50 && dot.healthkit==0){
+									dot.healthkit=1;
+									dot.money-=50;
+								}
 							}
+
+							if(checksingle_Out(dot.mCollider,wallArray.wall[115])){
+								if(dot.money>=50 && dot.easteregg==0 && dot.keystate==4){
+									dot.easteregg=1;
+								}
+							}
+
 							if(checksingle_Out(dot.mCollider,wallArray.wall[27])){
 								dot.ID_card=1;	
 							}
@@ -382,8 +411,19 @@ int main( int argc, char* args[] )
 							if(checksingle_Out(dot.mCollider,wallArray.wall[98])){
 								if(dot.keystate==1){dot.keystate=2;
 													dot.hungry=1;
-													dot.money=100;}	
+													dot.money+=100;}	
 							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[111])){
+								if(dot.keystate==2 && dot.hungry==0){
+													dot.keystate=3;
+													dot.money+=200;}	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[112])){
+								if(dot.keystate==3 && dot.girinaryulu==1){
+													dot.keystate=4;
+													dot.money+=300;}	
+							}
+
 
 							if(checksingle_Out(dot.mCollider,wallArray.wall[104]) && dot.relaystate==0){
 								dot.relaystate=1;
@@ -405,6 +445,7 @@ int main( int argc, char* args[] )
 								dot.money+=10;
 							}
 
+							dot.ReturnFoodRender(wallArray.wall);
 
 							break;
 
@@ -509,6 +550,7 @@ int main( int argc, char* args[] )
 				//powers render
 				dot.PowersRender(camera.x,camera.y,wallArray.wall);
 				dot.FoodRender(camera.x,camera.y,wallArray.wall);
+				dot.YuluRender(camera.x,camera.y,wallArray.wall);
 				dot.relayMoney(camera.x,camera.y);
 				dot.MoneyRender();
 

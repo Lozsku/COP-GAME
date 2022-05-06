@@ -671,6 +671,47 @@ Wall_Array::Wall_Array(){
 			wall109.w = 1*32;
 			wall109.h = 1*32;
 			
+			SDL_Rect wall110;
+			wall110.x = 56*32;
+			wall110.y = 131*32;
+			wall110.w = 9*32;
+			wall110.h = 5*32;
+			
+			SDL_Rect wall111;
+			wall111.x = 71*32+12;
+			wall111.y = 134*32;
+			wall111.w = 9*32-24;
+			wall111.h = 2*32;
+			
+			SDL_Rect wall112;
+			wall112.x = 59*32;
+			wall112.y = 132*32;
+			wall112.w = 32;
+			wall112.h = 32;
+			
+			SDL_Rect wall113;
+			wall113.x = 94*32;
+			wall113.y = 119*32;
+			wall113.w = 32;
+			wall113.h = 32;
+			
+			SDL_Rect wall114;
+			wall114.x = 101*32;
+			wall114.y = 80*32;
+			wall114.w = 19*32;
+			wall114.h = 11*32;
+
+			SDL_Rect wall115;
+			wall115.x = 94*32;
+			wall115.y = 161*32;
+			wall115.w = 64;
+			wall115.h = 1;
+
+			SDL_Rect wall116;
+			wall116.x = 110*32-16;
+			wall116.y = 84*32;
+			wall116.w = 64;
+			wall116.h = 90;
 			
 
 			
@@ -787,6 +828,13 @@ Wall_Array::Wall_Array(){
 			wall.push_back(wall107);
 			wall.push_back(wall108);
 			wall.push_back(wall109);
+			wall.push_back(wall110);
+			wall.push_back(wall111);
+			wall.push_back(wall112);
+			wall.push_back(wall113);
+			wall.push_back(wall114);
+			wall.push_back(wall115);
+			wall.push_back(wall116);
 			
 			//wall.push_back(wall52);
 			
@@ -819,10 +867,38 @@ Wall_Array::Wall_Array(){
 			wall_p4.w = 64;
 			wall_p4.h = 1;
 			
+			SDL_Rect wall_p5;
+			wall_p5.x = 65*32;
+			wall_p5.y = 132*32;
+			wall_p5.w = 1;
+			wall_p5.h = 32;
+			
+			SDL_Rect wall_p6;
+			wall_p6.x = 65*32-1;
+			wall_p6.y = 132*32;
+			wall_p6.w = 1;
+			wall_p6.h = 32;
+			
+			SDL_Rect wall_p7;
+			wall_p7.x = 76*32;
+			wall_p7.y = 128*32-1;
+			wall_p7.w = 32;
+			wall_p7.h = 1;
+			
+			SDL_Rect wall_p8;
+			wall_p8.x = 79*32-13;
+			wall_p8.y = 135*32;
+			wall_p8.w = 1;
+			wall_p8.h = 32;
+			
 			portwall.push_back(wall_p1);
 			portwall.push_back(wall_p2);
 			portwall.push_back(wall_p3);
 			portwall.push_back(wall_p4);
+			portwall.push_back(wall_p5);
+			portwall.push_back(wall_p6);
+			portwall.push_back(wall_p7);
+			portwall.push_back(wall_p8);
 			
 			
 }

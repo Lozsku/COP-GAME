@@ -19,6 +19,8 @@ LTexture gLivesTexture;
 LTexture gHealthTexture;
 LTexture gIdTexture;
 LTexture gKeyTexture;
+LTexture gKey2Texture;
+LTexture gKey3Texture;
 LTexture gMaskTexture;
 LTexture gAttendenceTexture;
 
@@ -52,6 +54,8 @@ Dot::Dot()
     //Initialize the velocity
     mVelX = 0;
     mVelY = 0;
+
+	easteregg=0;
     
     //initialising lives
     lives=5;
@@ -69,8 +73,8 @@ Dot::Dot()
     key=0;
 	attendence=0;
 	mask=0;
-	keystate=0;
-	money=0;
+	keystate=4;
+	money=50;
 	hungry=0;
 	relaystate=0;
 
@@ -82,12 +86,15 @@ Dot::Dot()
 	foodAmul=0;
 	foodNescafe=0;
 	foodHimadri=0;
+	girinaryulu=0;
+
+	yulu=0;
     
 		
 }
 
 void Dot::handleEvent( SDL_Event& e )
-{
+{	
     //If a key was pressed
 	if( e.type == SDL_KEYDOWN && e.key.repeat == 0 )
     {	
@@ -185,6 +192,13 @@ void Dot::move( vector<SDL_Rect> wall )
     mPosY=cor[1];
     mCollider.x=mPosX;
     mCollider.y=mPosY;
+
+	if(checksingle_Out(mCollider,port.wall[114]) && keystate==4){
+		mPosX=110*32;
+		mPosY=90*32;
+		mCollider.x=mPosX;
+		mCollider.y=mPosY;
+	}
     
 }
 
@@ -242,10 +256,14 @@ void Dot::LivesRender()
 
 void Dot::PowersRender(int camX, int camY,vector<SDL_Rect> wall)
 {
+	LTexture gEastereggTexture;
 	gHealthTexture.loadFromFile("images/healthkit.png");
 	gIdTexture.loadFromFile("images/ID.png");
 	gMaskTexture.loadFromFile("images/mask.png");
 	gKeyTexture.loadFromFile("images/key1.png");
+	gKey2Texture.loadFromFile("images/key2.png");
+	gKey3Texture.loadFromFile("images/key3.png");
+	gEastereggTexture.loadFromFile("images/easteregg.png");
 	
 
 	if(attendence==0){
@@ -261,6 +279,13 @@ void Dot::PowersRender(int camX, int camY,vector<SDL_Rect> wall)
 	}
 	else if(healthkit==1){
 		gHealthTexture.render(250,2);
+	}
+
+	if(easteregg==0){
+		gEastereggTexture.render(110*32-16-camX,84*32-camY);
+	}
+	else if(easteregg==1){
+		gEastereggTexture.render(600,2);
 	}
 	
 	if(ID_card==0 && checksingle_Out(mCollider,wall[27])){
@@ -287,8 +312,22 @@ void Dot::PowersRender(int camX, int camY,vector<SDL_Rect> wall)
 	if(keystate==1 && checksingle_Out(mCollider,wall[98]) ){
 		gKeyTexture.render(14*32-camX,47*32-camY);
 	}
-	else if(keystate==2){
+	else if(keystate>=2){
 		gKeyTexture.render(460,2);
+	}
+
+	if(keystate==2 && hungry==0 && checksingle_Out(mCollider,wall[111]) ){
+		gKey2Texture.render(59*32-camX,132*32-camY);
+	}
+	else if(keystate>=3){
+		gKey2Texture.render(500,2);
+	}
+
+	if(keystate==3 && girinaryulu==1 && checksingle_Out(mCollider,wall[112]) ){
+		gKey3Texture.render(94*32-camX,119*32-16-camY);
+	}
+	else if(keystate>=4){
+		gKey3Texture.render(540,2);
 	}
 }
 
@@ -354,7 +393,60 @@ void Dot::FoodRender(int camX,int camY,vector<SDL_Rect> wall){
 	}
 }
 
+void Dot::ReturnFoodRender(vector<SDL_Rect> wall){
+	if(money>=20){
+		if(foodRajadhani==0 && checksingle_Out(mCollider,wall[63]) && food==0){
+			food=1;
+			foodRajadhani=1;
+			money-=20;
+		}
+		if(foodMasala==0 && checksingle_Out(mCollider,wall[62]) && food==0){
+			food=1;
+			foodMasala=1;
+			money-=20;
+		}
+		
+		if(foodDelhi16==0 && checksingle_Out(mCollider,wall[54]) && food==0){
+			food=1;
+			foodDelhi16=1;
+			money-=20;
+		}
+		
+		if(foodAmul==0 && checksingle_Out(mCollider,wall[77]) && food==0){
+			food=1;
+			foodAmul=1;
+			money-=20;
+		}
+		
+		if(foodNescafe==0 && checksingle_Out(mCollider,wall[78]) && food==0){
+			food=1;
+			foodNescafe=1;
+			money-=20;
+		}
+		
+		if(foodShuru==0 && checksingle_Out(mCollider,wall[76]) && food==0){
+			food=1;
+			foodShuru=1;
+			money-=20;
+		}
+		
+		if(foodHimadri==0 && checksingle_Out(mCollider,wall[91]) && food==0){
+			food=1;
+			foodHimadri=1;
+			money-=20;
+		}
+	}
+	
+}
+
 void Dot::YuluRender(int camX,int camY,vector<SDL_Rect> wall){
+	counterdot++;
+	if(counterdot>200){
+		counterdot=0;
+		if(yulu==1)money-=1;
+	}
+	if(money==0){yulu=0;DOT_VEL=10;}
+
 	LTexture gYTexture;
 	LTexture gYNTexture;
 	LTexture gYJTexture;
@@ -364,64 +456,155 @@ void Dot::YuluRender(int camX,int camY,vector<SDL_Rect> wall){
 	LTexture gYMTexture;
 	LTexture gYLHCTexture;
 	LTexture gYHTexture;
+	LTexture gYMainTexture;
+	gYTexture.loadFromFile("images/yulu.png");
+	gYNTexture.loadFromFile("images/yulu.png");
+	gYJTexture.loadFromFile("images/yulu.png");
+	gYSTexture.loadFromFile("images/yulu.png");
+	gYGTexture.loadFromFile("images/yulu.png");
+	gYRTexture.loadFromFile("images/yulu.png");
+	gYMTexture.loadFromFile("images/yulu.png");
+	gYLHCTexture.loadFromFile("images/yulu.png");
+	gYHTexture.loadFromFile("images/yulu.png");
+	gYMainTexture.loadFromFile("images/yulu.png");
+	if( checksingle_Out(mCollider,wall[2]) && yulu==0){
+		gYNTexture.render(8*32-10-camX,10*32-camY);
+	}
 	
-	gYTexture.loadFromFile("images/ID.png");
-	gYNTexture.loadFromFile("images/ID.png");
-	gYJTexture.loadFromFile("images/ID.png");
-	gYSTexture.loadFromFile("images/ID.png");
-	gYGTexture.loadFromFile("images/ID.png");
-	gYRTexture.loadFromFile("images/ID.png");
-	gYMTexture.loadFromFile("images/ID.png");
-	gYLHCTexture.loadFromFile("images/ID.png");
-	gYHTexture.loadFromFile("images/ID.png");
-	if(foodRajadhani==0 && checksingle_Out(mCollider,wall[63])){
-		gYNTexture.render(60*32-camX,42*32-camY);
+	else if(checksingle_Out(mCollider,wall[51]) && yulu==0){
+		gYJTexture.render(87*32-10-camX,10*32-camY);
 	}
-	else if(foodRajadhani==1 ){
-		gYTexture.render(2,80);
+	
+	else if(checksingle_Out(mCollider,wall[34]) && yulu==0){
+		gYSTexture.render(25*32-10-camX,29*32-camY);
 	}
-	if(foodMasala==0 && checksingle_Out(mCollider,wall[62])){
-		gYJTexture.render(48*32-camX,43*32-camY);
+	
+	else if(checksingle_Out(mCollider,wall[69]) && yulu==0){
+		gYGTexture.render(59*32-10-camX,62*32-camY);
 	}
-	else if(foodMasala==1 ){
-		gYTexture.render(2,80);
+	
+	else if(checksingle_Out(mCollider,wall[68]) && yulu==0){
+		gYRTexture.render(34*32-10-camX,49*32-camY);
 	}
-	if(foodDelhi16==0 && checksingle_Out(mCollider,wall[54])){
-		gYSTexture.render(58*32-camX,22*32-camY);
+	
+	else if(checksingle_Out(mCollider,wall[70]) && yulu==0){
+		gYMTexture.render(34*32-10-camX,75*32-camY);
 	}
-	else if(foodDelhi16==1 ){
-		gYTexture.render(2,80);
+	
+	else if(checksingle_Out(mCollider,wall[85]) && yulu==0){
+		gYLHCTexture.render(74*32-10-camX,144*32-camY);
 	}
-	if(foodAmul==0 && checksingle_Out(mCollider,wall[77])){
-		gYGTexture.render(66*32-camX,129*32-camY);
+	
+	else if(checksingle_Out(mCollider,wall[89]) && yulu==0){
+		gYHTexture.render(128*31-10-camX,165*32-camY);
 	}
-	else if(foodAmul==1 ){
-		gYTexture.render(2,80);
+	
+	else if(checksingle_Out(mCollider,wall[86]) && yulu==0){
+		gYMainTexture.render(127*32-10-camX,135*32-camY);
 	}
-	if(foodNescafe==0 && checksingle_Out(mCollider,wall[78])){
-		gYRTexture.render(66*32-camX,134*32-camY);
+	else if(yulu==1){
+		gYTexture.render(70,80);
 	}
-	else if(foodNescafe==1 ){
-		gYTexture.render(2,80);
+
+
+}
+
+void Dot::ReturnYuluRender(vector<SDL_Rect> wall){
+
+	if( checksingle_Out(mCollider,wall[2]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
 	}
-	if(foodShuru==0 && checksingle_Out(mCollider,wall[76])){
-		gYMTexture.render(58*32-camX,128*32-camY);
+	else if( checksingle_Out(mCollider,wall[2]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
 	}
-	else if(foodShuru==1 ){
-		gYTexture.render(2,80);
+	
+	if(checksingle_Out(mCollider,wall[51]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
 	}
-	if(foodHimadri==0 && checksingle_Out(mCollider,wall[91])){
-		gYLHCTexture.render(133*32-camX,165*32-camY);
+	else if(checksingle_Out(mCollider,wall[51]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
 	}
-	else if(foodHimadri==1 ){
-		gYTexture.render(2,80);
+	
+	if(checksingle_Out(mCollider,wall[34]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
 	}
-	if(foodHimadri==0 && checksingle_Out(mCollider,wall[91])){
-		gYHTexture.render(133*32-camX,165*32-camY);
+	else if(checksingle_Out(mCollider,wall[34]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
 	}
-	else if(foodHimadri==1 ){
-		gYTexture.render(2,80);
+	
+	if(checksingle_Out(mCollider,wall[69]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+		girinaryulu=1;
+		
 	}
+	else if(checksingle_Out(mCollider,wall[69]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	if(checksingle_Out(mCollider,wall[68]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+	}
+	else if(checksingle_Out(mCollider,wall[68]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	if(checksingle_Out(mCollider,wall[70]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+	}
+	else if(checksingle_Out(mCollider,wall[70]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	if(checksingle_Out(mCollider,wall[85]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+	}
+	else if(checksingle_Out(mCollider,wall[85]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	if(checksingle_Out(mCollider,wall[89]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+	}
+	else if(checksingle_Out(mCollider,wall[89]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	if(checksingle_Out(mCollider,wall[86]) && yulu==0){
+		yulu=1;
+		DOT_VEL=15;
+	}
+	else if(checksingle_Out(mCollider,wall[86]) && yulu==1){
+		yulu=0;
+		DOT_VEL=10;
+		girinaryulu=0;
+	}
+	
+	
+
 
 }
 

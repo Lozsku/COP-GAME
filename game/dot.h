@@ -37,7 +37,7 @@ class Dot
 		//Shows number of lives
 		void LivesRender();
 
-		
+		int counterdot = 0;
 
 
 		//Position accessors
@@ -65,13 +65,19 @@ class Dot
 		int foodNescafe;
 		int foodHimadri;
 		int relaystate;
+		int yulu;
+		int girinaryulu;
+
+		int easteregg;
 		void collect(int C);
 		
 		void PowersRender(int camX,int camY,vector<SDL_Rect> wall);
 		//earn money in relay 10
 		void relayMoney(int camX, int camY);
 		void FoodRender(int camX,int camY,vector<SDL_Rect> wall);
+		void ReturnFoodRender(vector<SDL_Rect> wall);
 		void YuluRender(int camX,int camY,vector<SDL_Rect> wall);
+		void ReturnYuluRender(vector<SDL_Rect> wall);
 		void MoneyRender();
 		
 		
