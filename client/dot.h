@@ -72,6 +72,7 @@ class Dot
 
 		int instructions;
 		int direc;
+		int dog;
 
 		int easteregg;
 		void collect(int C);
