@@ -69,6 +69,8 @@ class Dot
 		int relaystate;
 		int yulu;
 		int girinaryulu;
+		int dog;
+	
 
 		int instructions;
 		int direc;

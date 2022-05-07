@@ -93,7 +93,7 @@ Dot::Dot()
 
 	yulu=0;
     
-		
+	dog=0;	
 }
 
 void Dot::handleEvent( SDL_Event& e )
@@ -136,6 +136,7 @@ void Dot::update_life(vector<SDL_Rect> bots){
 			handle_state=1;
 			cout<<lives;}    	
 		state_life=1;
+		dog = 1;
         }
         else{
         	state_life=0;
