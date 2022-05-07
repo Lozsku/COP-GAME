@@ -12,12 +12,13 @@ class Bot
 
 		//Maximum axis velocity of the dot
 		static const int BOT_VEL = 10;
+		int counter = 0;
 
 		//Initializes the variables
 		Bot();
 
 		//Takes key presses and adjusts the dot's velocity
-		void handleEvent(  );
+		void handleEvent( int platerX,int playerX,SDL_Rect dot );
 
 		//Moves the dot
 		void move(vector<SDL_Rect> wall);
@@ -28,6 +29,9 @@ class Bot
 		//Position accessors
 		int getPosX();
 		int getPosY();
+		
+		//Dot's collision box
+		SDL_Rect mCollider;
 
     private:
 		//The X and Y offsets of the dot
@@ -36,7 +40,6 @@ class Bot
 		//The velocity of the dot
 		int botVelX, botVelY;
 		
-		//Dot's collision box
-		SDL_Rect mCollider;
+		
 };
 #endif

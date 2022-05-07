@@ -10,18 +10,18 @@ and may not be redistributed without written permission.*/
 #include <string>
 #include <iostream>
 #include <bits/stdc++.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#define PORT 8080
 #include "wall.h"
 #include "wall.cpp"
 //#include "bot.cpp"
 #include "bot.h"
 #include "dot.cpp"
 #include "dot.h"
+
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#define PORT 8080
 //#include "common.h"
 using namespace std;
 
@@ -64,6 +64,7 @@ SDL_Window* gWindow = NULL;
 //Walking animation
 const int WALKING_ANIMATION_FRAMES = 4;
 SDL_Rect gSpriteClips[ WALKING_ANIMATION_FRAMES ];
+SDL_Rect gSpriteClips2[ WALKING_ANIMATION_FRAMES ];
 SDL_Rect gSpriteClips_right[ WALKING_ANIMATION_FRAMES ];
 SDL_Rect gSpriteClips_left[ WALKING_ANIMATION_FRAMES ];
 SDL_Rect gSpriteClips_up[ WALKING_ANIMATION_FRAMES ];
@@ -72,6 +73,7 @@ SDL_Rect gSpriteClips_down[ WALKING_ANIMATION_FRAMES ];
 //Scene textures
 //####LTexture gDotTexture;
 LTexture gBGTexture;
+LTexture gplayer2Texture;
 //####LTexture gBotTexture;
 
 
@@ -79,6 +81,32 @@ LTexture gBGTexture;
 
 
 //*************************************************************************************************************************//
+
+vector<int> extract(string buffer){
+
+	int i=0;
+	int r=0;
+	string var[5];
+	vector<int> ret;
+	
+	char dl='_';
+	while(i<buffer.length()){
+		while(buffer[i] != dl){
+			var[r] = var[r] + buffer[i];
+			i++;
+		}
+		i++;
+		r++;	
+	}
+	ret.push_back( stoi(var[0]));//posx
+	ret.push_back( stoi(var[1]));//posx
+	ret.push_back( stoi(var[2]));//posx
+	ret.push_back( stoi(var[3]));//posx
+	ret.push_back( stoi(var[4]));//posx
+	
+	
+	return ret;
+}
 
 //*************************************************************************************************************************//
 
@@ -239,7 +267,13 @@ bool loadMedia()
 		gSpriteClips[3]=gSpriteClips_down[0];
 	}
 	
-	if( !gBotTexture.loadFromFile( "images/dot.bmp" ) )
+	if( !gBotTexture.loadFromFile( "images/evildog.png" ) )
+	{
+		printf( "Failed to load dot texture!\n" );
+		success = false;
+	}
+	
+	if( !gplayer2Texture.loadFromFile( "images/dore.png" ) )
 	{
 		printf( "Failed to load dot texture!\n" );
 		success = false;
@@ -276,49 +310,58 @@ void close()
 
 
 int main( int argc, char* args[] )
-{       
+{
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	int server_fd, new_socket, valread;
-    	struct sockaddr_in address;
-    	int opt = 1;
-    	int addrlen = sizeof(address);
-    	char buffer[1024] = { 0 };
-	string CO_OR_CLIENT;
+	struct sockaddr_in address;
+	int opt = 1;
+	int addrlen = sizeof(address);
+	char* hello = "Hello from server";
+	char* hellow = "Hello from me";
+	char* up="up";
+	char* down="down";
+	char* right="right";
+	char* left="left";
 	
+
 	// Creating socket file descriptor
-    	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
-	{
-        	perror("socket failed");
-        	exit(EXIT_FAILURE);
-    	}
-	
+	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0))
+		== 0) {
+		perror("socket failed");
+		exit(EXIT_FAILURE);
+	}
+
 	// Forcefully attaching socket to the port 8080
-    	if (setsockopt(server_fd, SOL_SOCKET,SO_REUSEADDR | SO_REUSEPORT, &opt,sizeof(opt))) 
-	{
-        	perror("setsockopt");
-        	exit(EXIT_FAILURE);
-    	}
-    	address.sin_family = AF_INET;
-    	address.sin_addr.s_addr = INADDR_ANY;
-    	address.sin_port = htons(PORT);
-	
+	if (setsockopt(server_fd, SOL_SOCKET,
+				SO_REUSEADDR | SO_REUSEPORT, &opt,
+				sizeof(opt))) {
+		perror("setsockopt");
+		exit(EXIT_FAILURE);
+	}
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(PORT);
+
 	// Forcefully attaching socket to the port 8080
-    	if (bind(server_fd, (struct sockaddr*)&address,sizeof(address)) < 0) 
-	{
-        	perror("bind failed");
-        	exit(EXIT_FAILURE);
-    	}
-    	if (listen(server_fd, 3) < 0) 
-	{
-        	perror("listen");
-        	exit(EXIT_FAILURE);
-    	}
-    	if ((new_socket = accept(server_fd, (struct sockaddr*)&address,(socklen_t*)&addrlen)) < 0) 
-	{
-        	perror("accept");
-        	exit(EXIT_FAILURE);
-    	}
-	
-	
+	if (bind(server_fd, (struct sockaddr*)&address,
+			sizeof(address))
+		< 0) {
+		perror("bind failed");
+		exit(EXIT_FAILURE);
+	}
+	if (listen(server_fd, 3) < 0) {
+		perror("listen");
+		exit(EXIT_FAILURE);
+	}
+	if ((new_socket
+		= accept(server_fd, (struct sockaddr*)&address,
+				(socklen_t*)&addrlen))
+		< 0) {
+		perror("accept");
+		exit(EXIT_FAILURE);
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -346,6 +389,8 @@ int main( int argc, char* args[] )
 			//The dot that will be moving around on the screen
 			Dot dot;
 			Bot bot;
+			
+			
 			
 			
 			
@@ -400,6 +445,105 @@ int main( int argc, char* args[] )
 							gSpriteClips[2]=gSpriteClips_right[2];
 							gSpriteClips[3]=gSpriteClips_right[3];
 							break;
+							
+							case SDLK_h:
+								if(dot.healthkit==1 && dot.lives<5){dot.up_life();}
+							break;
+
+							case SDLK_y:
+								dot.ReturnYuluRender(wallArray.wall);
+							break;
+
+							case SDLK_i:
+								if(dot.instructions==0){dot.instructions=1;}
+								else {dot.instructions=0;}
+							break;
+
+							case SDLK_r:
+								if(dot.food==1){
+									if(dot.lives<5) dot.lives+=1;
+									dot.food=0;
+									dot.foodRajadhani=0;
+									dot.foodMasala=0;
+									dot.foodDelhi16=0;
+									dot.foodShuru=0;
+									dot.foodAmul=0;
+									dot.foodNescafe=0;
+									dot.foodHimadri=0;
+									dot.hungry=0;
+								}
+							break;
+							
+							case SDLK_RETURN:
+							SDL_Rect h_wall;
+							h_wall.x = 1312;
+							h_wall.y = 2028;
+							h_wall.w = 256;
+							h_wall.h = 40;
+							if(checksingle_Out(dot.mCollider,h_wall)){
+								if(dot.money>=50 && dot.healthkit==0){
+									dot.healthkit=1;
+									dot.money-=50;
+								}
+							}
+
+							if(checksingle_Out(dot.mCollider,wallArray.wall[115])){
+								if(dot.money>=50 && dot.easteregg==0 && dot.keystate==4){
+									dot.easteregg=1;
+								}
+							}
+
+							if(checksingle_Out(dot.mCollider,wallArray.wall[27])){
+								dot.ID_card=1;	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[97])){
+								if(dot.ID_card==1 && dot.mask==1){dot.attendence=1;	
+											dot.keystate=1;
+								}
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[37])){
+								if(dot.ID_card==1)dot.mask=1;	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[98])){
+								if(dot.keystate==1){dot.keystate=2;
+													dot.hungry=1;
+													dot.money+=100;}	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[111])){
+								if(dot.keystate==2 && dot.hungry==0){
+													dot.keystate=3;
+													dot.money+=200;}	
+							}
+							if(checksingle_Out(dot.mCollider,wallArray.wall[112])){
+								if(dot.keystate==3 && dot.girinaryulu==1){
+													dot.keystate=4;
+													dot.money+=300;}	
+							}
+
+
+							if(checksingle_Out(dot.mCollider,wallArray.wall[104]) && dot.relaystate==0){
+								dot.relaystate=1;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[105]) && dot.relaystate==1){
+								dot.relaystate=2;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[106]) && dot.relaystate==2){
+								dot.relaystate=3;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[107]) && dot.relaystate==3){
+								dot.relaystate=4;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[108]) && dot.relaystate==4){
+								dot.relaystate=5;
+							}
+							else if(checksingle_Out(dot.mCollider,wallArray.wall[105]) && dot.relaystate==5){
+								dot.relaystate=0;
+								dot.money+=20;
+							}
+
+							dot.ReturnFoodRender(wallArray.wall);
+
+							break;
 
 							default:
 							gSpriteClips[0]=gSpriteClips_down[0];
@@ -409,13 +553,33 @@ int main( int argc, char* args[] )
 							break;
 						}
 					}
+					/*else if(e.type == SDL_KEYUP && e.key.repeat == 0)
+					{	switch( e.key.keysym.sym )
+        					{	default:
+							gSpriteClips[0]=gSpriteClips_down[0];
+							gSpriteClips[1]=gSpriteClips_down[0];
+							gSpriteClips[2]=gSpriteClips_down[0];
+							gSpriteClips[3]=gSpriteClips_down[0];
+							break;	
+        					}
+					
+					
+					}*/
 					//***********************************************************??
 					
 
 					//Handle input for the dot
 					dot.handleEvent( e );
 				}
-				bot.handleEvent();
+				//update life
+				vector<SDL_Rect> bots;
+      				bots.push_back(bot.mCollider);
+				dot.update_life(bots);
+				
+				bot.handleEvent(dot.getPosX(),dot.getPosY(),dot.mCollider);
+				
+				
+				
 				//Move the dot
 				dot.move(wallArray.wall);
 				
@@ -456,11 +620,58 @@ int main( int argc, char* args[] )
 				//********************************************************??
 				//Render current frame
 				SDL_Rect* currentClip = &gSpriteClips[ frame / 4 ];
-				gDotTexture.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
+				
 
 
 				//Go to next frame
 				++frame;
+				//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&777
+				char buffer[1024] = { 0 };
+				valread = read(new_socket, buffer, 1024);
+				printf("%s\n", buffer);
+				string x_y=buffer;
+				vector<int> para=extract(x_y);
+				
+				switch(para[2]){
+							case 0:
+							gSpriteClips2[0]=gSpriteClips_up[0];
+							gSpriteClips2[1]=gSpriteClips_up[1];
+							gSpriteClips2[2]=gSpriteClips_up[2];
+							gSpriteClips2[3]=gSpriteClips_up[3];
+							break;
+
+							case 1:
+							gSpriteClips2[0]=gSpriteClips_down[0];
+							gSpriteClips2[1]=gSpriteClips_down[1];
+							gSpriteClips2[2]=gSpriteClips_down[2];
+							gSpriteClips2[3]=gSpriteClips_down[3];
+							break;
+
+							case 2:
+							gSpriteClips2[0]=gSpriteClips_left[0];
+							gSpriteClips2[1]=gSpriteClips_left[1];
+							gSpriteClips2[2]=gSpriteClips_left[2];
+							gSpriteClips2[3]=gSpriteClips_left[3];
+							break;
+
+							case 3:
+							gSpriteClips2[0]=gSpriteClips_right[0];
+							gSpriteClips2[1]=gSpriteClips_right[1];
+							gSpriteClips2[2]=gSpriteClips_right[2];
+							gSpriteClips2[3]=gSpriteClips_right[3];
+							break;
+				}
+				SDL_Rect* currentClip2 = &gSpriteClips2[ frame / 4 ];
+				gplayer2Texture.render( para[0] - camera.x, para[1] - camera.y, currentClip2 );
+				
+
+				string cordinates= to_string(dot.getPosX()) + "_" +  to_string(dot.getPosY()) + "_"+to_string(dot.direc)+"_"+to_string(dot.keystate)+"_"+to_string(dot.easteregg);
+		
+				cout<<cordinates<<endl;
+				char* CO_OR_SERVER = &cordinates[0]; 
+			    	send(new_socket, CO_OR_SERVER, strlen(CO_OR_SERVER), 0);
+
+				//7&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 				//Cycle animation
 				if( frame / 4 >= WALKING_ANIMATION_FRAMES )
@@ -475,18 +686,26 @@ int main( int argc, char* args[] )
 				
 				//Render bot
 				bot.render(camera.x,camera.y);
+				
+				//render life
+				dot.LivesRender();
+				
+				//powers render
+				dot.PowersRender(camera.x,camera.y,wallArray.wall);
+				dot.enemykeys(para[3]);
+				dot.FoodRender(camera.x,camera.y,wallArray.wall);
+				dot.YuluRender(camera.x,camera.y,wallArray.wall);
+				dot.relayMoney(camera.x,camera.y);
+				dot.MoneyRender();
+
+				gDotTexture.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
+				if(dot.instructions==1)dot.InstructionsRender();
 
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}
 		}
 	}
-	char* CO_OR_SERVER = to_string(dot.getPosX()) + " " +  to_string(dot.getPosY());
-	valread = read(new_socket, buffer, 1024);
-    	
-    	send(new_socket, CO_OR_SERVER, strlen(CO_OR_SERVER), 0);
-    	printf("Hello message sent\n");
-    	return 0;
 
 	//Free resources and close SDL
 	close();

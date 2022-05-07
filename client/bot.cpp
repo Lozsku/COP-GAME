@@ -16,6 +16,8 @@ LTexture gBotTexture;
 
 //Box collision detector
 bool checkCollision( SDL_Rect a, vector<SDL_Rect> wall );
+bool checkCollision_Out( SDL_Rect a, vector<SDL_Rect> wall );
+bool checksingle_Out( SDL_Rect a, SDL_Rect b );
 
 Bot::Bot()
 {
@@ -34,19 +36,34 @@ Bot::Bot()
 }
 
 
-void Bot::handleEvent()
-{	int arr[10] = {-4,-3,-2,-1,0,1,2,3,4,5};
-    //If a key was pressed
-    srand(time(0));
-    if(rand()%2==0){
-    	botVelX=arr[rand() % 10];
-    	botVelY=0;
+void Bot::handleEvent(int playerX, int playerY,SDL_Rect dot)
+{	
+    counter++;
+    if (checksingle_Out( dot, mCollider)) counter = 0;
+    if (counter > 1000 && abs(botPosX - playerX) + abs(botPosY - playerY) <= 1000){
+        if (playerX < botPosX) botVelX = -3;
+        else if(playerX == botPosX) botVelX=0;
+        else botVelX = 3;
+
+        if (playerY < botPosY) botVelY = -3;
+        else if(playerY == botPosY) botVelY=0;
+        else botVelY = 3;
     }
     else{
-    	botVelY=arr[rand() % 10];
-    	botVelX=0;
+        int arr[10] = {-4,-3,-2,-1,0,1,2,3,4,5};
+        //If a key was pressed
+        srand(time(0));
+        if(rand()%2==0){
+            botVelX=arr[rand() % 10];
+            botVelY=0;
+        }
+        else{
+            botVelY=arr[rand() % 10];
+            botVelX=0;
+        }
     }
-    	cout<<botVelX<<" X "<<botVelY<<" Y "<<endl;
+    	//cout<<botVelX<<" X "<<botVelY<<" Y "<<endl;
+
 	
 }
 
@@ -54,7 +71,8 @@ void Bot::move(vector<SDL_Rect> wall)
 {
     //Move the dot left or right
     botPosX += botVelX;
-    mCollider.x = botPosX;																						
+    mCollider.x = botPosX;	
+    																					
 
     //If the dot went too far to the left or right
     if( ( botPosX < 0 ) || ( botPosX + BOT_WIDTH > LEVEL_WIDTH )  || !checkCollision( mCollider, wall )  )
@@ -75,6 +93,8 @@ void Bot::move(vector<SDL_Rect> wall)
         botPosY -= botVelY;
         mCollider.y = botPosY;
     }
+    
+    
 }
 
 void Bot::render( int camX, int camY )
@@ -147,3 +167,58 @@ bool checkCollision( SDL_Rect a, vector<SDL_Rect> wall )
 	}
 	return false;
 }
+
+bool checksingle_Out( SDL_Rect a, SDL_Rect b )
+{	//cout<<"p";
+    //The sides of the rectangles
+    int leftA, leftB;
+    int rightA, rightB;
+    int topA, topB;
+    int bottomA, bottomB;
+
+    //Calculate the sides of rect A
+    leftA = a.x;
+    rightA = a.x + a.w;
+    topA = a.y;
+    bottomA = a.y + a.h;
+
+    //Calculate the sides of rect B
+    leftB = b.x;
+    rightB = b.x + b.w;
+    topB = b.y;
+    bottomB = b.y + b.h;
+
+    //If any of the sides from A are outside of B
+    if( bottomA <= topB )
+    {
+        return false;
+    }
+
+    if( topA >= bottomB )
+    {
+        return false;
+    }
+
+    if( rightA <= leftB )
+    {
+        return false;
+    }
+
+    if( leftA >= rightB )
+    {
+        return false;
+    }
+
+    //If none of the sides from A are outside B
+    return true;
+}
+
+bool checkCollision_Out( SDL_Rect a, vector<SDL_Rect> wall )
+{	for (int i = 0; i < static_cast<int>(wall.size()); i++){
+		if(checksingle_Out(a,wall[i])){
+			return true;
+		}
+	}
+	return false;
+}
+
