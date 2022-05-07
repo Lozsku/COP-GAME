@@ -1,6 +1,6 @@
 # IITDMazeGame
 
--- By Somisetty 2020CS10390 & Bodisetty Sainath 2020CS50421---------
+-- By Somisetty HarshaVardhan 2020CS10390 & Bodisetty Sainath 2020CS50421---------
 
 -------------------------------------------------------
 
