@@ -70,13 +70,13 @@ LTexture gBGTexture;
 //intial screen
 LTexture gPromptTexture;
 //current mainTexture
-LTexture gcurrentTexture;
+
 LTexture gcurrentTexture1;
-LTexture gcurrentTexture2;
 //####LTexture gBotTexture;
 
 //The music that will be played
 Mix_Music *gMusic = NULL;
+
 
 //The sound effects that will be used
 Mix_Chunk *gKeycollect = NULL;
@@ -85,7 +85,8 @@ Mix_Chunk *gHealthkit = NULL;
 Mix_Chunk *gPointsinc = NULL;
 Mix_Chunk *gFoodeaten = NULL;
 Mix_Chunk *gBark = NULL;
-
+Mix_Chunk *gWinsound = NULL;
+Mix_Chunk *gYulu = NULL;
 
 //*************************************************************************************************************************//
 
@@ -283,6 +284,7 @@ bool loadMedia()
 		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
 		success = false;
 	}
+
 	
 	//Load sound effects
 	gKeycollect = Mix_LoadWAV( "music and sounds/keycollect.wav" );
@@ -327,6 +329,20 @@ bool loadMedia()
 		success = false;
 	}
 	
+	gWinsound = Mix_LoadWAV( "music and sounds/winsound.wav" );
+	if( gBark == NULL )
+	{
+		printf( "Failed to load Win sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	
+	gYulu = Mix_LoadWAV( "music and sounds/Yulu.wav" );
+	if( gYulu == NULL )
+	{
+		printf( "Failed to load yulu sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
 
 	return success;
 }
@@ -338,7 +354,7 @@ void close()
 	gBotTexture.free();
 	gBGTexture.free();
 	gPromptTexture.free();
-	gcurrentTexture.free();
+	gcurrentTexture1.free();
 	
 	//Free the sound effects
 	Mix_FreeChunk( gKeycollect );
@@ -347,17 +363,20 @@ void close()
 	Mix_FreeChunk( gPointsinc );
 	Mix_FreeChunk( gFoodeaten );
 	Mix_FreeChunk( gBark );
+	Mix_FreeChunk( gWinsound );
+	Mix_FreeChunk( gYulu );
 	gKeycollect = NULL;
 	gHealth = NULL;
 	gHealthkit = NULL;
 	gPointsinc = NULL;
 	gFoodeaten = NULL;
 	gBark = NULL;
+	gWinsound = NULL;
+	gYulu = NULL;
 	
 	//Free the music
 	Mix_FreeMusic( gMusic );
 	gMusic = NULL;
-
 	//Destroy window	
 	SDL_DestroyRenderer( gRenderer );
 	SDL_DestroyWindow( gWindow );
@@ -373,13 +392,14 @@ void close()
 
 int main( int argc, char* args[] )
 {
+	//Playing the music
+	Mix_PlayMusic( gMusic, -1 );
 	//Framerate setting
 	int p=0;
 	const int FPS = 60;
 	const int frameDelay = 1000/FPS;
 	Uint32 frameStart;
 	int frameTime;
-	gcurrentTexture = gPromptTexture;
 	
 	//Start up SDL and create window
 	if( !init() )
@@ -411,9 +431,6 @@ int main( int argc, char* args[] )
 			
 			//The camera area
 			SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
-			
-			//Playing the music
-			Mix_PlayMusic( gMusic, -1 );
 
 			//While application is running
 			while( !quit )
@@ -437,10 +454,8 @@ int main( int argc, char* args[] )
 						switch( e.key.keysym.sym )
 						{
 							case SDLK_p:
-							gcurrentTexture = gBGTexture;
 							gcurrentTexture1 = gDotTexture;
 							p=1;
-							
 							case SDLK_m:
 							//If there is no music playing
 							if( Mix_PlayingMusic() == 0 )
@@ -471,6 +486,8 @@ int main( int argc, char* args[] )
 							gSpriteClips[1]=gSpriteClips_up[1];
 							gSpriteClips[2]=gSpriteClips_up[2];
 							gSpriteClips[3]=gSpriteClips_up[3];
+							if(dot.yulu == 1)
+								Mix_PlayChannel( -1, gYulu, 0 );
 							break;
 
 							case SDLK_DOWN:
@@ -478,6 +495,8 @@ int main( int argc, char* args[] )
 							gSpriteClips[1]=gSpriteClips_down[1];
 							gSpriteClips[2]=gSpriteClips_down[2];
 							gSpriteClips[3]=gSpriteClips_down[3];
+							if(dot.yulu == 1)
+								Mix_PlayChannel( -1, gYulu, 0 );
 							break;
 
 							case SDLK_LEFT:
@@ -485,6 +504,8 @@ int main( int argc, char* args[] )
 							gSpriteClips[1]=gSpriteClips_left[1];
 							gSpriteClips[2]=gSpriteClips_left[2];
 							gSpriteClips[3]=gSpriteClips_left[3];
+							if(dot.yulu == 1)
+								Mix_PlayChannel( -1, gYulu, 0 );
 							break;
 
 							case SDLK_RIGHT:
@@ -492,6 +513,8 @@ int main( int argc, char* args[] )
 							gSpriteClips[1]=gSpriteClips_right[1];
 							gSpriteClips[2]=gSpriteClips_right[2];
 							gSpriteClips[3]=gSpriteClips_right[3];
+							if(dot.yulu == 1)
+								Mix_PlayChannel( -1, gYulu, 0 );
 							break;
 							
 							case SDLK_h:
@@ -500,6 +523,7 @@ int main( int argc, char* args[] )
 
 							case SDLK_y:
 								dot.ReturnYuluRender(wallArray.wall);
+									
 							break;
 
 							case SDLK_r:
@@ -635,8 +659,6 @@ int main( int argc, char* args[] )
 				
 				bot.handleEvent(dot.getPosX(),dot.getPosY(),dot.mCollider);
 				
-				
-				
 				//Move the dot
 				dot.move(wallArray.wall);
 				
@@ -703,6 +725,9 @@ int main( int argc, char* args[] )
 				
 				//powers render
 				dot.PowersRender(camera.x,camera.y,wallArray.wall);
+				if(dot.easteregg == 1){
+					Mix_PlayChannel( -1, gWinsound, 0 );
+				}
 				dot.FoodRender(camera.x,camera.y,wallArray.wall);
 				dot.YuluRender(camera.x,camera.y,wallArray.wall);
 				dot.relayMoney(camera.x,camera.y);
