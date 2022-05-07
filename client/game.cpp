@@ -16,13 +16,14 @@ and may not be redistributed without written permission.*/
 #include "bot.h"
 #include "dot.cpp"
 #include "dot.h"
-
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#define PORT 8080
 //#include "common.h"
+
+#include <arpa/inet.h>
+#include <fstream>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <unistd.h>	
+#define PORT 8080
 using namespace std;
 
 //The dimensions of the level
@@ -42,6 +43,31 @@ Wall_Array wallArray;
 	
 //*************************************************************************************************************************//
 
+vector<int> extract(string buffer){
+
+	int i=0;
+	int r=0;
+	string var[5];
+	vector<int> ret;
+	
+	char dl='_';
+	while(i<buffer.length()){
+		while(buffer[i] != dl){
+			var[r] = var[r] + buffer[i];
+			i++;
+		}
+		i++;
+		r++;	
+	}
+	ret.push_back( stoi(var[0]));//posx
+	ret.push_back( stoi(var[1]));//posx
+	ret.push_back( stoi(var[2]));//posx
+	ret.push_back( stoi(var[3]));//posx
+	ret.push_back( stoi(var[4]));//posx
+	
+	
+	return ret;
+}
 //*************************************************************************************************************************//
 
 //Starts up SDL and creates window
@@ -73,7 +99,7 @@ SDL_Rect gSpriteClips_down[ WALKING_ANIMATION_FRAMES ];
 //Scene textures
 //####LTexture gDotTexture;
 LTexture gBGTexture;
-LTexture gplayer2Texture;
+LTexture gplayer1Texture;
 //####LTexture gBotTexture;
 
 
@@ -81,32 +107,6 @@ LTexture gplayer2Texture;
 
 
 //*************************************************************************************************************************//
-
-vector<int> extract(string buffer){
-
-	int i=0;
-	int r=0;
-	string var[5];
-	vector<int> ret;
-	
-	char dl='_';
-	while(i<buffer.length()){
-		while(buffer[i] != dl){
-			var[r] = var[r] + buffer[i];
-			i++;
-		}
-		i++;
-		r++;	
-	}
-	ret.push_back( stoi(var[0]));//posx
-	ret.push_back( stoi(var[1]));//posx
-	ret.push_back( stoi(var[2]));//posx
-	ret.push_back( stoi(var[3]));//posx
-	ret.push_back( stoi(var[4]));//posx
-	
-	
-	return ret;
-}
 
 //*************************************************************************************************************************//
 
@@ -272,8 +272,7 @@ bool loadMedia()
 		printf( "Failed to load dot texture!\n" );
 		success = false;
 	}
-	
-	if( !gplayer2Texture.loadFromFile( "images/dore.png" ) )
+	if( !gplayer1Texture.loadFromFile( "images/dore.png" ) )
 	{
 		printf( "Failed to load dot texture!\n" );
 		success = false;
@@ -310,58 +309,36 @@ void close()
 
 
 int main( int argc, char* args[] )
-{
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	int server_fd, new_socket, valread;
-	struct sockaddr_in address;
-	int opt = 1;
-	int addrlen = sizeof(address);
-	char* hello = "Hello from server";
-	char* hellow = "Hello from me";
-	char* up="up";
-	char* down="down";
-	char* right="right";
-	char* left="left";
-	
+{  
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	int sock = 0, valread;
+	struct sockaddr_in serv_addr;
+	char* hello = "Hello from client";
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		printf("\n Socket creation error \n");
+		return -1;
+	}	
 
-	// Creating socket file descriptor
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0))
-		== 0) {
-		perror("socket failed");
-		exit(EXIT_FAILURE);
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(PORT);
+
+	// Convert IPv4 and IPv6 addresses from text to binary
+	// form
+	if (inet_pton(AF_INET, "10.184.20.177", &serv_addr.sin_addr)
+		<= 0) {
+		printf(
+			"\nInvalid address/ Address not supported \n");
+		return -1;
 	}
 
-	// Forcefully attaching socket to the port 8080
-	if (setsockopt(server_fd, SOL_SOCKET,
-				SO_REUSEADDR | SO_REUSEPORT, &opt,
-				sizeof(opt))) {
-		perror("setsockopt");
-		exit(EXIT_FAILURE);
-	}
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
-
-	// Forcefully attaching socket to the port 8080
-	if (bind(server_fd, (struct sockaddr*)&address,
-			sizeof(address))
+	if (connect(sock, (struct sockaddr*)&serv_addr,
+				sizeof(serv_addr))
 		< 0) {
-		perror("bind failed");
-		exit(EXIT_FAILURE);
+		printf("\nConnection Failed \n");
+		return -1;
 	}
-	if (listen(server_fd, 3) < 0) {
-		perror("listen");
-		exit(EXIT_FAILURE);
-	}
-	if ((new_socket
-		= accept(server_fd, (struct sockaddr*)&address,
-				(socklen_t*)&addrlen))
-		< 0) {
-		perror("accept");
-		exit(EXIT_FAILURE);
-	}
-	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -445,6 +422,8 @@ int main( int argc, char* args[] )
 							gSpriteClips[2]=gSpriteClips_right[2];
 							gSpriteClips[3]=gSpriteClips_right[3];
 							break;
+
+
 							
 							case SDLK_h:
 								if(dot.healthkit==1 && dot.lives<5){dot.up_life();}
@@ -625,13 +604,19 @@ int main( int argc, char* args[] )
 
 				//Go to next frame
 				++frame;
-				//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&777
-				char buffer[1024] = { 0 };
-				valread = read(new_socket, buffer, 1024);
-				printf("%s\n", buffer);
-				string x_y=buffer;
-				vector<int> para=extract(x_y);
 				
+				//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77
+				string cordinates= to_string(dot.getPosX()) + "_" +  to_string(dot.getPosY()) + "_"+to_string(dot.direc)+"_"+to_string(dot.keystate)+"_"+to_string(dot.easteregg);
+		
+				cout<<cordinates<<endl;
+				char* CO_OR_SERVER = &cordinates[0]; 
+	    			send(sock, CO_OR_SERVER, strlen(CO_OR_SERVER), 0);
+	    			
+	    			char buffer[1024] = { 0 };
+	    			valread = read(sock, buffer, 1024);
+	    			printf("%s\n", buffer);
+	    			string x_y=buffer;
+				vector<int> para=extract(x_y);
 				switch(para[2]){
 							case 0:
 							gSpriteClips2[0]=gSpriteClips_up[0];
@@ -662,16 +647,10 @@ int main( int argc, char* args[] )
 							break;
 				}
 				SDL_Rect* currentClip2 = &gSpriteClips2[ frame / 4 ];
-				gplayer2Texture.render( para[0] - camera.x, para[1] - camera.y, currentClip2 );
+				gplayer1Texture.render( para[0] - camera.x, para[1] - camera.y, currentClip2 );
 				
-
-				string cordinates= to_string(dot.getPosX()) + "_" +  to_string(dot.getPosY()) + "_"+to_string(dot.direc)+"_"+to_string(dot.keystate)+"_"+to_string(dot.easteregg);
-		
-				cout<<cordinates<<endl;
-				char* CO_OR_SERVER = &cordinates[0]; 
-			    	send(new_socket, CO_OR_SERVER, strlen(CO_OR_SERVER), 0);
-
-				//7&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+				
+				//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 				//Cycle animation
 				if( frame / 4 >= WALKING_ANIMATION_FRAMES )
