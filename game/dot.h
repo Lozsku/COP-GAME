@@ -67,6 +67,7 @@ class Dot
 		int relaystate;
 		int yulu;
 		int girinaryulu;
+		int dog;
 
 		int easteregg;
 		void collect(int C);

@@ -89,8 +89,9 @@ Dot::Dot()
 	girinaryulu=0;
 
 	yulu=0;
-    
-		
+	
+	dog=0;
+    		
 }
 
 void Dot::handleEvent( SDL_Event& e )
@@ -128,6 +129,7 @@ void Dot::update_life(vector<SDL_Rect> bots){
 	if(checkCollision_Out(mCollider,bots)){
 		if(state_life==0 ){lives-=1;DOT_VEL-=1;handle_state=1;cout<<lives;}    	
 		state_life=1;
+		dog = 1;
         }
         else{
         	state_life=0;

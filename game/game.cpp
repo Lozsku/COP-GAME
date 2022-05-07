@@ -67,9 +67,24 @@ SDL_Rect gSpriteClips_down[ WALKING_ANIMATION_FRAMES ];
 //####LTexture gDotTexture;
 LTexture gBGTexture;
 //####LTexture gBotTexture;
+//intial screen
+LTexture gPromptTexture;
+//current mainTexture
+LTexture gcurrentTexture;
+LTexture gcurrentTexture1;
+LTexture gcurrentTexture2;
+//####LTexture gBotTexture;
 
+//The music that will be played
+Mix_Music *gMusic = NULL;
 
-
+//The sound effects that will be used
+Mix_Chunk *gKeycollect = NULL;
+Mix_Chunk *gHealth = NULL;
+Mix_Chunk *gHealthkit = NULL;
+Mix_Chunk *gPointsinc = NULL;
+Mix_Chunk *gFoodeaten = NULL;
+Mix_Chunk *gBark = NULL;
 
 
 //*************************************************************************************************************************//
@@ -82,7 +97,7 @@ bool init()
 	bool success = true;
 
 	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0 )
 	{
 		printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
 		success = false;
@@ -123,6 +138,14 @@ bool init()
 					printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
 					success = false;
 				}
+				
+				//Initialize SDL_mixer
+				if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+				{
+					printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+					success = false;
+				}
+				
 			}
 		}
 	}
@@ -238,13 +261,72 @@ bool loadMedia()
 		printf( "Failed to load dot texture!\n" );
 		success = false;
 	}
-
+	
+	//Load initial background texture
+	if( !gPromptTexture.loadFromFile( "images/initialdisplay.png" ) )
+	{
+		printf( "Failed to load background texture!\n" );
+		success = false;
+	}
+	
 	//Load background texture
 	if( !gBGTexture.loadFromFile( "images/map.png" ) )
 	{
 		printf( "Failed to load background texture!\n" );
 		success = false;
 	}
+	
+	//Load music
+	gMusic = Mix_LoadMUS( "music and sounds/beatmusic.wav" );
+	if( gMusic == NULL )
+	{
+		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	//Load sound effects
+	gKeycollect = Mix_LoadWAV( "music and sounds/keycollect.wav" );
+	if( gKeycollect == NULL )
+	{
+		printf( "Failed to load keycollect sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	gHealthkit = Mix_LoadWAV( "music and sounds/Healthkit.wav" );
+	if( gHealthkit == NULL )
+	{
+		printf( "Failed to load Healthkit sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	gHealth = Mix_LoadWAV( "music and sounds/Health.wav" );
+	if( gHealth == NULL )
+	{
+		printf( "Failed to load Health sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	gPointsinc = Mix_LoadWAV( "music and sounds/pointsinc.wav" );
+	if( gPointsinc == NULL )
+	{
+		printf( "Failed to pointsinc sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	gFoodeaten = Mix_LoadWAV( "music and sounds/foodeaten.wav" );
+	if( gFoodeaten == NULL )
+	{
+		printf( "Failed to load Foodeaten sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
+	gBark = Mix_LoadWAV( "music and sounds/Bark.wav" );
+	if( gBark == NULL )
+	{
+		printf( "Failed to load Bark sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+		success = false;
+	}
+	
 
 	return success;
 }
@@ -255,6 +337,26 @@ void close()
 	gDotTexture.free();
 	gBotTexture.free();
 	gBGTexture.free();
+	gPromptTexture.free();
+	gcurrentTexture.free();
+	
+	//Free the sound effects
+	Mix_FreeChunk( gKeycollect );
+	Mix_FreeChunk( gHealth );
+	Mix_FreeChunk( gHealthkit );
+	Mix_FreeChunk( gPointsinc );
+	Mix_FreeChunk( gFoodeaten );
+	Mix_FreeChunk( gBark );
+	gKeycollect = NULL;
+	gHealth = NULL;
+	gHealthkit = NULL;
+	gPointsinc = NULL;
+	gFoodeaten = NULL;
+	gBark = NULL;
+	
+	//Free the music
+	Mix_FreeMusic( gMusic );
+	gMusic = NULL;
 
 	//Destroy window	
 	SDL_DestroyRenderer( gRenderer );
@@ -271,6 +373,14 @@ void close()
 
 int main( int argc, char* args[] )
 {
+	//Framerate setting
+	int p=0;
+	const int FPS = 60;
+	const int frameDelay = 1000/FPS;
+	Uint32 frameStart;
+	int frameTime;
+	gcurrentTexture = gPromptTexture;
+	
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -299,13 +409,11 @@ int main( int argc, char* args[] )
 			Dot dot;
 			Bot bot;
 			
-			
-			
-			
-			
-			
 			//The camera area
 			SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+			
+			//Playing the music
+			Mix_PlayMusic( gMusic, -1 );
 
 			//While application is running
 			while( !quit )
@@ -313,6 +421,7 @@ int main( int argc, char* args[] )
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
+					frameStart = SDL_GetTicks();
 					//User requests quit
 					if( e.type == SDL_QUIT )
 					{
@@ -323,10 +432,40 @@ int main( int argc, char* args[] )
 					//**********************************************************??
 					//User presses a key
 					else if( e.type == SDL_KEYDOWN )
-					{
+					{	
 						//Select surfaces based on key press
 						switch( e.key.keysym.sym )
 						{
+							case SDLK_p:
+							gcurrentTexture = gBGTexture;
+							gcurrentTexture1 = gDotTexture;
+							p=1;
+							
+							case SDLK_m:
+							//If there is no music playing
+							if( Mix_PlayingMusic() == 0 )
+							{
+								//Play the music
+								Mix_PlayMusic( gMusic, -1 );
+							}
+							//If music is being played
+							else
+							{
+								//If the music is paused
+								if( Mix_PausedMusic() == 1 )
+								{
+									//Resume the music
+									Mix_ResumeMusic();
+								}
+								//If the music is playing
+								else
+								{
+									//Pause the music
+									Mix_PauseMusic();
+								}
+							}
+							break;
+							
 							case SDLK_UP:
 							gSpriteClips[0]=gSpriteClips_up[0];
 							gSpriteClips[1]=gSpriteClips_up[1];
@@ -356,7 +495,7 @@ int main( int argc, char* args[] )
 							break;
 							
 							case SDLK_h:
-								if(dot.healthkit==1 && dot.lives<5){dot.up_life();}
+								if(dot.healthkit==1 && dot.lives<5){dot.up_life();Mix_PlayChannel( -1, gHealth, 0 );}
 							break;
 
 							case SDLK_y:
@@ -388,6 +527,7 @@ int main( int argc, char* args[] )
 								if(dot.money>=50 && dot.healthkit==0){
 									dot.healthkit=1;
 									dot.money-=50;
+									Mix_PlayChannel( -1, gHealthkit, 0 );
 								}
 							}
 
@@ -409,19 +549,25 @@ int main( int argc, char* args[] )
 								if(dot.ID_card==1)dot.mask=1;	
 							}
 							if(checksingle_Out(dot.mCollider,wallArray.wall[98])){
-								if(dot.keystate==1){dot.keystate=2;
-													dot.hungry=1;
-													dot.money+=100;}	
+								if(dot.keystate==1){   dot.keystate=2;
+											Mix_PlayChannel( -1, gKeycollect, 0 );
+											dot.hungry=1;
+											Mix_PlayChannel( -1, gPointsinc, 0 );
+											dot.money+=100;}	
 							}
 							if(checksingle_Out(dot.mCollider,wallArray.wall[111])){
 								if(dot.keystate==2 && dot.hungry==0){
+													Mix_PlayChannel( -1, gKeycollect, 0 );
 													dot.keystate=3;
-													dot.money+=200;}	
+													dot.money+=200;
+													Mix_PlayChannel( -1, gPointsinc, 0 );}	
 							}
 							if(checksingle_Out(dot.mCollider,wallArray.wall[112])){
 								if(dot.keystate==3 && dot.girinaryulu==1){
+													Mix_PlayChannel( -1, gKeycollect, 0 );
 													dot.keystate=4;
-													dot.money+=300;}	
+													dot.money+=300;
+													Mix_PlayChannel( -1, gPointsinc, 0 );}	
 							}
 
 
@@ -446,6 +592,9 @@ int main( int argc, char* args[] )
 							}
 
 							dot.ReturnFoodRender(wallArray.wall);
+							if(dot.food == 1){
+								Mix_PlayChannel( -1, gFoodeaten, 0 );
+							}
 
 							break;
 
@@ -473,12 +622,16 @@ int main( int argc, char* args[] )
 					
 
 					//Handle input for the dot
-					dot.handleEvent( e );
+					if(p==1)
+						dot.handleEvent( e );
 				}
 				//update life
 				vector<SDL_Rect> bots;
       				bots.push_back(bot.mCollider);
 				dot.update_life(bots);
+				if(dot.dog == 1){
+					Mix_PlayChannel( -1, gBark, 0 );dot.dog = 0;}
+					
 				
 				bot.handleEvent(dot.getPosX(),dot.getPosY(),dot.mCollider);
 				
@@ -517,7 +670,8 @@ int main( int argc, char* args[] )
 				SDL_RenderClear( gRenderer );
 
 				//Render background
-				gBGTexture.render( 0, 0, &camera );
+				if(p==1)
+					gBGTexture.render( 0, 0, &camera );
 
 				//Render objects
 				//dot.render( camera.x, camera.y );
@@ -554,10 +708,19 @@ int main( int argc, char* args[] )
 				dot.relayMoney(camera.x,camera.y);
 				dot.MoneyRender();
 
-				gDotTexture.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
+				gcurrentTexture1.render( dot.getPosX() - camera.x, dot.getPosY() - camera.y, currentClip );
 
+				if(p==0)
+					gPromptTexture.render( 0, 0 );
 				//Update screen
 				SDL_RenderPresent( gRenderer );
+				
+				//Delay of frames if needed
+				frameTime = SDL_GetTicks() - frameStart;
+				if(frameDelay > frameTime)
+				{
+					SDL_Delay(frameDelay - frameTime);
+				}
 			}
 		}
 	}
